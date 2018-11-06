@@ -1,7 +1,25 @@
 @import url(https://fonts.googleapis.com/css?family=Montserrat);
 
+.player1, .player2 {
+  position: absolute;
+  margin-top: 25px;
+  top: 50%;
+  left: 50%;
+}
+
+.player1{
+  z-index: 2;
+}
+
+.player2{
+  z-index: 1;
+}
+
+.usernames {
+  display: none;
+}
+
 .pulse-button {
-    position: absolute;
     width: 100px;
     height: 100px;
     border: none;
@@ -12,10 +30,6 @@
     background-size:cover;
     background-repeat: no-repeat;
     cursor: pointer;
-    margin-top: 25px;
-    z-index: 2;
-    top: 50%;
-    left: 50%;
      /* bring your own prefixes */
     transform: translate(-50%, -50%);
 }
@@ -29,14 +43,14 @@
 
   .animate-player-one {
     transition: all 0.1s ease-in;
-    transform: translate(-350px,-50%);
-    -webkit-transform: translate(-350px,-50%); /** Chrome & Safari **/
+    transform: translateX(-350px);
+    -webkit-transform: translateX(-350px); /** Chrome & Safari **/
   }
 
   .animate-player-two {
     transition: all 0.1s ease-in;
-    transform: translate(350px,-50%);
-    -webkit-transform: translate(260px,-50%); /** Chrome & Safari **/
+    transform: translateX(350px);
+    -webkit-transform: translateX(260px); /** Chrome & Safari **/
   }
 
 .col-centered {
@@ -46,8 +60,6 @@
   .player-two {
     background-color: green;
     background-image: url(../images/player_two.png);
-    position: absolute;
-    z-index: 1;
   }
   
   @-webkit-keyframes pulse {to {box-shadow: 0 0 0 45px rgba(232, 76, 61, 0);}}
@@ -74,7 +86,7 @@
     position: absolute;
     top: 100%;
     left: 50%;
-    margin-top: 40px;
+    margin-top: 60px;
     /* bring your own prefixes */
     transform: translate(-50%, -30%); /* x, y */
   }

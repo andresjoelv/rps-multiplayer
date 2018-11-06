@@ -5,11 +5,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Rock Paper Scissors</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery.js"></script>
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/5.5.7/firebase.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery.js"></script>
     <!-- reset css-->
     <link rel="stylesheet" type="text/css" href="assets/css/reset.css" />
     <!-- Font Awesome-->
@@ -24,8 +23,14 @@
     <div class=".container-fluid">
         <div class="row">
             <div class="col-md-12 col-centered">
-                <div><button class="pulse-button player-one"></button></div>
-                <div><button class="pulse-button player-two"></button></div>
+                <div class="player1">
+                    <button class="pulse-button player-one"></button>
+                    <p class="usernames" id="username1">andres</p>
+                </div>
+                <div class="player2">
+                    <button class="pulse-button player-two"></button>
+                    <p class="usernames" id="username2">mario</p>
+                </div>
                 <!-- <input id="username" placeholder="Name" class="form-control" type="text"> -->
                 <div><button class="button search">Search</button></div>
             </div>
