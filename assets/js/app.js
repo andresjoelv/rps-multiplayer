@@ -22,7 +22,7 @@ $(document).ready(function(){
 
     var player;
     var otherPlayer;
-    var name = {};
+    var name = [];
     var userRef;
     var wins1, wins2, losses1, losses2;
 
@@ -41,9 +41,16 @@ $(document).ready(function(){
                 $(".player-one").addClass("start-pulse");
                 game.setPlayer();
             });
+            playersRef.on('child_added', function(childSnapshot){
+                var key = childSnapshot.key;
+                name.push(childSnapshot.val().name);
+                $("#username1").text(name[0]);
+                $("#username2").text(name[key-1]);
+            });
             turnRef.on("value", function(snapshot){
-                var isGameOn = snapshot.val(); // 1 or 2
-                if(isGameOn == 1) {
+                var turnNum = snapshot.val(); // 1 or 2
+                if(turnNum == 1) {
+
                     $(".player-one").removeClass("start-pulse");
                     $(".player-two").removeClass("start-pulse");
                     $(".player1").addClass("animate-player-one");
@@ -51,12 +58,15 @@ $(document).ready(function(){
                     $(".usernames").css("display", "block");
                     $(".search").hide();
                             
-                    //game.buildBoard();
+                    game.buildBoard();
                     game.turn1();
                 }
                 else if (turnNum == 2) {
-                    //game.turn2();
+                    game.turn2();
                 }
+                else if (turnNum == 3){
+					game.turn3();
+				}
             });
         },
         setPlayer: function(){
@@ -76,7 +86,9 @@ $(document).ready(function(){
         },
         addPlayer: function(playerNumber){
             // get player name from user input
-            var playerName = 'Andres';
+            var playerName = $("#username").val();
+
+            
             // create new child with player number as the path
             userRef = playersRef.child(playerNumber); // usersRef = https://rpsgame-9749e.firebaseio.com/playersRef/1
             // Allows for disconnect
@@ -105,26 +117,79 @@ $(document).ready(function(){
             rcBtn.text("VS");
             
             button.append(rcBtn);
-
-            // listen for choice
-            $(document).on("mousedown", "img", game.setChoice);
+           
         },
         turn1: function() {
 			$('.player-one').css('border','4px solid green');
 			// Show turn message
 			//game.turnMessage(1);
-			// Show choices to player 1
+            // Show choices to player 1
+            console.log(player);
 			if (player == 1) {
-				game.buildBoard();
+                // listen for choice
+                $(document).one("mousedown", ".cards-container-1 img", game.setChoice);
 			}
+        },
+        turn2: function() {
+            $('.player-one').css('border','none');
+            $('.player-two').css('border','4px solid green');
+			// Show turn message
+			//game.turnMessage(1);
+            // Show choices to player 1
+            console.log(player);
+			if (player == 2) {
+                // listen for choice
+
+                $(document).one("mousedown", ".cards-container-2 img", game.setChoice);
+			}
+        },
+        turn3: function() {
+            $('.player-two').css('border','none');
+            // Show winner
+            game.winner();
 		},
         setChoice: function(){
-            //$(this).toggleClass('slide-top');
+            $(this).toggleClass('slide-top');
             // update selection to database
             var choice = $(this).attr('data-choice');
             userRef.update({
                 'choice': choice,
             })
+
+            // Listen for turnNum
+			turnRef.once('value', function(snapshot) {
+				var turnNum = snapshot.val();
+				// Increment turn
+				turnNum++;
+				turnRef.set(turnNum);
+			});
+        },
+        winner: function(){
+            // Get choices, wins, and losses from database
+			playersRef.once('value', function(snapshot) {
+				var snap1 = snapshot.val()[1];
+				var snap2 = snapshot.val()[2];
+				choice1 = snap1.choice;
+				wins1 = snap1.wins;
+				losses1 = snap1.losses;
+				choice2 = snap2.choice;
+				wins2 = snap2.wins;
+				losses2 = snap2.losses;
+				// Show other player's choice
+                var textChoice = otherPlayer == 1 ? choice1:choice2;
+                console.log('textChoice');
+                console.log(textChoice);
+                console.log('otherPlayer');
+                console.log(otherPlayer);
+				var $i = $('<i>');
+				$i.addClass('fa fa-hand-' + textChoice + '-o fa-one-large');
+				$i.addClass('position-absolute-choice' + otherPlayer);
+				$i.attr('data-choice', textChoice);
+				game.rotateChoice(otherPlayer, $i, textChoice);
+				$('.choices' + otherPlayer).append($i);
+
+				game.choiceAnimation();
+			});
         }
     }
     
