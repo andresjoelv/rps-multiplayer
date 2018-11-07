@@ -42,21 +42,20 @@ $(document).ready(function(){
                 game.setPlayer();
             });
             turnRef.on("value", function(snapshot){
-                var turnNum = snapshot.val(); // 1 or 2
-                if(turnNum == 1) {
+                var isGameOn = snapshot.val(); // 1 or 2
+                if(isGameOn == 1) {
                     $(".player-one").removeClass("start-pulse");
                     $(".player-two").removeClass("start-pulse");
                     $(".player1").addClass("animate-player-one");
                     $(".player2").addClass("animate-player-two");
                     $(".usernames").css("display", "block");
-                    //$("#username1").text()
+                    $(".search").hide();
+                            
+                    //game.buildBoard();
                     game.turn1();
                 }
-                else if (turnNum == 2){
-                    game.turn2();
-                }
-                else if (turnNum == 3){
-                    game.turn3();
+                else if (turnNum == 2) {
+                    //game.turn2();
                 }
             });
         },
@@ -89,8 +88,43 @@ $(document).ready(function(){
 				'losses': 0
 			});
         },
-        turn1: function(){
-            $(".player-one").css("border", "4px solid green");
+        buildBoard: function(){
+            var cards = $(".cards");
+
+            for(i in choices){
+                var imgChoice = $("<img>");
+                imgChoice.attr("src", `assets/images/${choices[i]}.png`);
+                imgChoice.attr("data-choice", choices[i]);
+                cards.append(imgChoice);
+            }
+
+            /* ready button */
+            var button = $(".ready-close-container");
+            var rcBtn = $("<button class='slide-fwd-center'>");
+            rcBtn.addClass("btn btn-round btn-lg btn-filled-orange");
+            rcBtn.text("VS");
+            
+            button.append(rcBtn);
+
+            // listen for choice
+            $(document).on("mousedown", "img", game.setChoice);
+        },
+        turn1: function() {
+			$('.player-one').css('border','4px solid green');
+			// Show turn message
+			//game.turnMessage(1);
+			// Show choices to player 1
+			if (player == 1) {
+				game.buildBoard();
+			}
+		},
+        setChoice: function(){
+            //$(this).toggleClass('slide-top');
+            // update selection to database
+            var choice = $(this).attr('data-choice');
+            userRef.update({
+                'choice': choice,
+            })
         }
     }
     
