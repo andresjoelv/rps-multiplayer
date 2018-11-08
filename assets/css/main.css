@@ -140,6 +140,23 @@
     background: #ff6b6b;
   }
 
+  .cards-choice-1 {
+    text-align: right;
+  }
+
+  .cards-choice-2 {
+    text-align: left
+  }
+
+  .choices {
+    margin: auto;
+    padding-top: 20px;
+    z-index: -1;
+    width: 200px;
+    height: 300px;
+    border:1px solid red;
+  }
+
   .slide-top {
     -webkit-animation: slide-top 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
             animation: slide-top 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;

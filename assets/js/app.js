@@ -19,12 +19,15 @@ $(document).ready(function(){
     var connections = database.ref("/connections");
     var playersRef = database.ref("/playersRef");
     var turnRef = database.ref("/turn");
+    var selRef = database.ref("/sel");
 
     var player;
     var otherPlayer;
     var name = [];
     var userRef;
     var wins1, wins2, losses1, losses2;
+
+    var num = 0;
 
     var choices = ['rock','paper','scissors'];
 
@@ -59,14 +62,14 @@ $(document).ready(function(){
                     $(".search").hide();
                             
                     game.buildBoard();
-                    game.turn1();
+                    //game.turn1();
                 }
-                else if (turnNum == 2) {
-                    game.turn2();
+                else if (turnNum == 3) {
+                     game.outcome();
                 }
-                else if (turnNum == 3){
-					game.turn3();
-				}
+                // else if (turnNum == 3){
+				// 	game.turn3();
+				// }
             });
         },
         setPlayer: function(){
@@ -117,6 +120,10 @@ $(document).ready(function(){
             rcBtn.text("VS");
             
             button.append(rcBtn);
+
+            console.log(player);
+
+            $(document).one("mousedown", `.cards-container-${player} img`, game.setChoice);
            
         },
         turn1: function() {
@@ -149,12 +156,21 @@ $(document).ready(function(){
             game.winner();
 		},
         setChoice: function(){
-            $(this).toggleClass('slide-top');
+            num += 1;
+            //$(this).toggleClass('slide-top');
+            var cardsChoiceDiv = $(`.cards-choice-${player}`);
+            var imgC = $("<img>");
+            var choice = $(this).data("choice");
+            imgC.attr("src", `assets/images/${choice}.png`)
+            
+
+            cardsChoiceDiv.html(imgC);
+
             // update selection to database
             var choice = $(this).attr('data-choice');
             userRef.update({
                 'choice': choice,
-            })
+            });
 
             // Listen for turnNum
 			turnRef.once('value', function(snapshot) {
@@ -164,7 +180,7 @@ $(document).ready(function(){
 				turnRef.set(turnNum);
 			});
         },
-        winner: function(){
+        outcome: function(){
             // Get choices, wins, and losses from database
 			playersRef.once('value', function(snapshot) {
 				var snap1 = snapshot.val()[1];
@@ -176,21 +192,90 @@ $(document).ready(function(){
 				wins2 = snap2.wins;
 				losses2 = snap2.losses;
 				// Show other player's choice
-                var textChoice = otherPlayer == 1 ? choice1:choice2;
-                console.log('textChoice');
-                console.log(textChoice);
-                console.log('otherPlayer');
-                console.log(otherPlayer);
-				var $i = $('<i>');
-				$i.addClass('fa fa-hand-' + textChoice + '-o fa-one-large');
-				$i.addClass('position-absolute-choice' + otherPlayer);
-				$i.attr('data-choice', textChoice);
-				game.rotateChoice(otherPlayer, $i, textChoice);
-				$('.choices' + otherPlayer).append($i);
+                var textChoice = player == 1 ? choice2:choice1;
+                var otherPlayer = player == 1 ? 2:1;
 
-				game.choiceAnimation();
+                var cardsChoiceDiv = $(`.cards-choice-${otherPlayer}`);
+
+                var imgC = $("<img>");
+                imgC.attr("src", `assets/images/${textChoice}.png`)
+
+                cardsChoiceDiv.html(imgC);
+				
+                //$(`.cards-container-${player} img[data-choice='${textChoice}']`).addClass('slide-top');
+                $(`div.cards-choice-${otherPlayer} > img`).addClass('rotate-center');
+
+
+				game.logic();
 			});
-        }
+        },
+        logic: function() {
+			// Logic for finding winner
+			if (choice1 == choice2) {
+				game.winner(0);
+			} else if (choice1 == 'rock') {
+				if (choice2 == 'paper') {
+					game.winner(2);
+				} else if (choice2 == 'scissors') {
+					game.winner(1);
+				}
+			} else if (choice1 == 'paper') {
+				if (choice2 == 'rock') {
+					game.winner(1);
+				} else if (choice2 == 'scissors') {
+					game.winner(2);
+				}
+			} else if (choice1 == 'scissors') {
+				if (choice2 == 'rock') {
+					game.winner(2);
+				} else if (choice2 == 'paper') {
+					game.winner(1);
+				}
+			}
+        },
+        winner: function(playerNum) {
+			var results;
+			// Display tie
+			if (playerNum == 0) {
+				results = 'Tie!';
+			} else {
+				// Display winner
+				//results = name[playerNum] + ' Wins!';
+				// Set wins and losses based on winner
+				if (playerNum == 1) {
+					wins = wins1;
+					losses = losses2;
+				} else {
+					wins = wins2;
+					losses = losses1;
+				}
+				// Incremement win and loss
+				wins++;
+				losses++;
+				// Gray loser
+				var otherPlayerNum = playerNum == 1 ? 2:1;
+				//$('.choices' + otherPlayerNum + ' > i').css('opacity','0.5');
+				window.setTimeout(function() {
+					// Set the wins and losses
+					playersRef.child(playerNum).update({
+						'wins': wins
+					});
+					playersRef.child(otherPlayerNum).update({
+						'losses': losses
+					});
+				}, 500);
+			}
+			// Display results
+			// window.setTimeout(function() {
+			// 	$('.results').text(results).css('z-index','1');
+			// }, 500);
+			// Change turn back to 1 after 3 seconds
+			window.setTimeout(function() {
+				// Reset turn to 1
+				turnRef.set(1);
+				//$('.results').text('').css('z-index','-1');
+			}, 2000);
+		}
     }
     
     // On page load Inizialize game
