@@ -1,13 +1,46 @@
 @import url(https://fonts.googleapis.com/css?family=Montserrat);
 
-.col-centered {
-  padding: 70px 0;
+body {
+  background: radial-gradient(circle, #8ab1aa 40%, #5eacc2, #1f81af);
+  font-family: Oxygen, sans-serif;
 }
+
+/* first row */
+.row-centered {
+  text-align:center;
+}
+.col-centered {
+  display:inline-block;
+  float:none;
+  /* reset the text-align */
+  text-align:left;
+  /* inline-block space fix */
+  margin-right:-4px;
+  text-align: center;
+  border: 1px solid red;
+}
+
+.userInput {
+  position: absolute;
+  margin-top: 190px;
+  top: 80%;
+  left: 50%;
+  transform: translate(-50%, -30%);
+}
+
+.col-centered input {
+  width: 200px;
+  border-radius: 20px;
+  text-align: center;
+}
+/* end first row */
+
+
 
 .player1, .player2 {
   position: absolute;
-  margin-top: 25px;
-  top: 50%;
+  margin-top: 100px;
+  top: 100%;
   left: 50%;
 }
 
@@ -57,6 +90,8 @@
     -webkit-transform: translateX(260px); /** Chrome & Safari **/
   }
 
+ 
+
 
 
   .player-two {
@@ -71,6 +106,7 @@
 
  
 
+  /* search btn */
   .button {
     margin-right: 5px;
     height: 50px;
@@ -88,7 +124,7 @@
     position: absolute;
     top: 100%;
     left: 50%;
-    margin-top: 60px;
+    margin-top: 250px;
     /* bring your own prefixes */
     transform: translate(-50%, -30%); /* x, y */
   }
@@ -104,6 +140,10 @@
     box-shadow: none;
   }
 
+ /* middle row */
+ .middle {
+  margin-top: 220px;
+}
   /* board */
   .board {
     position: absolute;
@@ -154,7 +194,7 @@
     z-index: -1;
     width: 200px;
     height: 300px;
-    border:1px solid red;
+    
   }
 
   .slide-top {

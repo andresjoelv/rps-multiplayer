@@ -49,11 +49,25 @@ $(document).ready(function(){
                 name.push(childSnapshot.val().name);
                 $("#username1").text(name[0]);
                 $("#username2").text(name[key-1]);
+
             });
+            // Remove player name from box on disconnect
+			playersRef.on('child_removed', function(childSnapshot) {
+				// Find player that was removed
+				//var key = childSnapshot.key();
+                // bring back to station one
+                $(".player-one").addClass("start-pulse");
+                $(".player-two").addClass("start-pulse");
+                $(".player1").removeClass("animate-player-one");
+                $(".player2").removeClass("animate-player-two");
+                $(".usernames").css("display", "none");
+                $(".search").show();
+                var cards = $(".cards");
+                cards.empty();
+			});
             turnRef.on("value", function(snapshot){
                 var turnNum = snapshot.val(); // 1 or 2
                 if(turnNum == 1) {
-
                     $(".player-one").removeClass("start-pulse");
                     $(".player-two").removeClass("start-pulse");
                     $(".player1").addClass("animate-player-one");
@@ -71,6 +85,31 @@ $(document).ready(function(){
 				// 	game.turn3();
 				// }
             });
+            // Listen for change in wins and losses for players 1
+			playersRef.child(1).on('child_changed', function(childSnapshot) {
+				if (childSnapshot.key == 'wins') {
+					wins1 = childSnapshot.val();
+				} else if (childSnapshot.key == 'losses') {
+					losses1 = childSnapshot.val();
+				}
+				// Update score display
+				if (wins1 !== undefined) {
+					console.log(wins + " vs losses = " + losses);
+                    $(`.score1`).text(wins1);
+                    $(`.record1`).text(losses1);
+				}
+            });
+            // Listen for change in wins and losses for player 2
+			playersRef.child(2).on('child_changed', function(childSnapshot) {
+				if (childSnapshot.key == 'wins') {
+					wins2 = childSnapshot.val();
+				} else if (childSnapshot.key == 'losses') {
+					losses2 = childSnapshot.val();
+				}
+				// Update score display
+				$(`.score2`).text(wins2);
+                $(`.record2`).text(losses2);
+			});
         },
         setPlayer: function(){
             database.ref().once("value", function(snapshot){
@@ -105,6 +144,11 @@ $(document).ready(function(){
         },
         buildBoard: function(){
             var cards = $(".cards");
+            cards.empty();
+            var choice1Div = $(".cards-choice-1");
+            choice1Div.empty();
+            var choice2Div = $(".cards-choice-2");
+            choice2Div.empty();
 
             for(i in choices){
                 var imgChoice = $("<img>");
@@ -114,12 +158,12 @@ $(document).ready(function(){
             }
 
             /* ready button */
-            var button = $(".ready-close-container");
-            var rcBtn = $("<button class='slide-fwd-center'>");
-            rcBtn.addClass("btn btn-round btn-lg btn-filled-orange");
-            rcBtn.text("VS");
+            // var button = $(".ready-close-container");
+            // var rcBtn = $("<button class='slide-fwd-center'>");
+            // rcBtn.addClass("btn btn-round btn-lg btn-filled-orange");
+            // rcBtn.text("VS");
             
-            button.append(rcBtn);
+            //button.append(rcBtn);
 
             console.log(player);
 
@@ -265,15 +309,11 @@ $(document).ready(function(){
 					});
 				}, 500);
 			}
-			// Display results
-			// window.setTimeout(function() {
-			// 	$('.results').text(results).css('z-index','1');
-			// }, 500);
-			// Change turn back to 1 after 3 seconds
+            // Display results
+
 			window.setTimeout(function() {
 				// Reset turn to 1
 				turnRef.set(1);
-				//$('.results').text('').css('z-index','-1');
 			}, 2000);
 		}
     }
