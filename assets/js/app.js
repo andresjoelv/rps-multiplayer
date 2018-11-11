@@ -19,12 +19,13 @@ $(document).ready(function(){
     var connections = database.ref("/connections");
     var playersRef = database.ref("/playersRef");
     var turnRef = database.ref("/turn");
-    var selRef = database.ref("/sel");
+    var pointsRef = database.ref("/scores");
 
     var player;
     var otherPlayer;
     var name = [];
     var userRef;
+    var pointsUserRef;
     var wins1, wins2, losses1, losses2;
 
     var num = 0;
@@ -32,30 +33,48 @@ $(document).ready(function(){
     var choices = ['rock','paper','scissors'];
 
     // Remove turn and chat when either player disconnects
-	turnRef.onDisconnect().remove(); // this call is made everytime the user is online because it fires only once
+    turnRef.onDisconnect().remove(); // this call is made everytime the user is online because it fires only once
+    
+    $(".title-animation").hide();
+
+    var audio = new Audio('assets/mp3/funny_level_180_proud_music_preview.mp3');
+    var smash = new Audio('assets/mp3/Sharp Punch-SoundBible.com-1947392621.mp3');
+    var coin = new Audio('assets/mp3/smw_coin.wav')
 
     var game = {
         listenToGame: function(){
             // listens for clients added
-            database.ref().on("value", function(snapshot){
+            pointsRef.on("value", function(snapshot){
 
             });
             $(".search").one("click", function(){
-                $(".player-one").addClass("start-pulse");
-                game.setPlayer();
+                audio.play();
+                var username = $("#username").val();
+                $(".form-control").hide();
+                if(username != " "){
+                    $(".player-one").addClass("start-pulse");
+                    game.setPlayer();
+                }
             });
             playersRef.on('child_added', function(childSnapshot){
                 var key = childSnapshot.key;
-                name.push(childSnapshot.val().name);
-                $("#username1").text(name[0]);
-                $("#username2").text(name[key-1]);
+                name[key] = childSnapshot.val().name;
+                var mainDiv = $(`.display-player${key}`);
+                mainDiv.empty();
+                var p = $("<p>");
+                p.attr("class", "usernames");
+                p.attr("id", `username${key}`);
+                p.text(name[key]);
+                mainDiv.append(p);
 
+                $(`#usernameTable${key}`).text(name[key]);
             });
             // Remove player name from box on disconnect
 			playersRef.on('child_removed', function(childSnapshot) {
 				// Find player that was removed
 				//var key = childSnapshot.key();
                 // bring back to station one
+                $(".form-control").empty();
                 $(".player-one").addClass("start-pulse");
                 $(".player-two").addClass("start-pulse");
                 $(".player1").removeClass("animate-player-one");
@@ -76,14 +95,10 @@ $(document).ready(function(){
                     $(".search").hide();
                             
                     game.buildBoard();
-                    //game.turn1();
                 }
                 else if (turnNum == 3) {
                      game.outcome();
                 }
-                // else if (turnNum == 3){
-				// 	game.turn3();
-				// }
             });
             // Listen for change in wins and losses for players 1
 			playersRef.child(1).on('child_changed', function(childSnapshot) {
@@ -94,7 +109,6 @@ $(document).ready(function(){
 				}
 				// Update score display
 				if (wins1 !== undefined) {
-					console.log(wins + " vs losses = " + losses);
                     $(`.score1`).text(wins1);
                     $(`.record1`).text(losses1);
 				}
@@ -106,7 +120,8 @@ $(document).ready(function(){
 				} else if (childSnapshot.key == 'losses') {
 					losses2 = childSnapshot.val();
 				}
-				// Update score display
+                // Update score display
+                
 				$(`.score2`).text(wins2);
                 $(`.record2`).text(losses2);
 			});
@@ -129,18 +144,23 @@ $(document).ready(function(){
         addPlayer: function(playerNumber){
             // get player name from user input
             var playerName = $("#username").val();
-
+            var str = playerName;
+            var three = str.substring(0, 3);
+            var usernameUp = three.toUpperCase();
             
             // create new child with player number as the path
             userRef = playersRef.child(playerNumber); // usersRef = https://rpsgame-9749e.firebaseio.com/playersRef/1
+
+            //pointsRef.child(playerNumber);
             // Allows for disconnect
             userRef.onDisconnect().remove(); // Ensures the data at this location is deleted when the client is disconnected
             // Sets children of player number
-			userRef.set({
-				'name': playerName,
+			userRef.set({       
+				'name': usernameUp,
 				'wins': 0,
 				'losses': 0
-			});
+            });
+        
         },
         buildBoard: function(){
             var cards = $(".cards");
@@ -170,35 +190,6 @@ $(document).ready(function(){
             $(document).one("mousedown", `.cards-container-${player} img`, game.setChoice);
            
         },
-        turn1: function() {
-			$('.player-one').css('border','4px solid green');
-			// Show turn message
-			//game.turnMessage(1);
-            // Show choices to player 1
-            console.log(player);
-			if (player == 1) {
-                // listen for choice
-                $(document).one("mousedown", ".cards-container-1 img", game.setChoice);
-			}
-        },
-        turn2: function() {
-            $('.player-one').css('border','none');
-            $('.player-two').css('border','4px solid green');
-			// Show turn message
-			//game.turnMessage(1);
-            // Show choices to player 1
-            console.log(player);
-			if (player == 2) {
-                // listen for choice
-
-                $(document).one("mousedown", ".cards-container-2 img", game.setChoice);
-			}
-        },
-        turn3: function() {
-            $('.player-two').css('border','none');
-            // Show winner
-            game.winner();
-		},
         setChoice: function(){
             num += 1;
             //$(this).toggleClass('slide-top');
@@ -209,6 +200,7 @@ $(document).ready(function(){
             
 
             cardsChoiceDiv.html(imgC);
+            smash.play();
 
             // update selection to database
             var choice = $(this).attr('data-choice');
@@ -245,35 +237,51 @@ $(document).ready(function(){
                 imgC.attr("src", `assets/images/${textChoice}.png`)
 
                 cardsChoiceDiv.html(imgC);
-				
-                //$(`.cards-container-${player} img[data-choice='${textChoice}']`).addClass('slide-top');
-                $(`div.cards-choice-${otherPlayer} > img`).addClass('rotate-center');
-
-
 				game.logic();
 			});
         },
         logic: function() {
 			// Logic for finding winner
 			if (choice1 == choice2) {
-				game.winner(0);
+                $(".item-winner").text("IT'Sss");
+                $(".item-message").text("A...");
+                $(".item-losser").text("TIE!!!");
+                game.winner(0);
 			} else if (choice1 == 'rock') {
 				if (choice2 == 'paper') {
-					game.winner(2);
+                    $(".item-winner").text(choice2);
+                    
+                    $(".item-losser").text(choice1);
+                    game.winner(2);
 				} else if (choice2 == 'scissors') {
-					game.winner(1);
+                    $(".item-winner").text(choice1);
+                    $(".item-message").text("SMASH!!");
+                    $(".item-losser").text(choice2);
+                    game.winner(1);
 				}
 			} else if (choice1 == 'paper') {
 				if (choice2 == 'rock') {
-					game.winner(1);
+                    $(".item-winner").text(choice1);
+                    $(".item-message").text("WRAPS!!");
+                    $(".item-losser").text(choice2);
+                    game.winner(1);
 				} else if (choice2 == 'scissors') {
-					game.winner(2);
+                    $(".item-winner").text(choice2);
+                    $(".item-message").text("CUTS!!!");
+                    $(".item-losser").text(choice1);
+                    game.winner(2);
 				}
 			} else if (choice1 == 'scissors') {
 				if (choice2 == 'rock') {
-					game.winner(2);
+                    $(".item-winner").text(choice2);
+                    $(".item-message").text("SMASH!!");
+                    $(".item-losser").text(choice1);
+                    game.winner(2);
 				} else if (choice2 == 'paper') {
-					game.winner(1);
+                    $(".item-winner").text(choice1);
+                    $(".item-message").text("CUTS!!!");
+                    $(".item-losser").text(choice2);
+                    game.winner(1);
 				}
 			}
         },
@@ -288,10 +296,12 @@ $(document).ready(function(){
 				// Set wins and losses based on winner
 				if (playerNum == 1) {
 					wins = wins1;
-					losses = losses2;
+                    losses = losses2;
+                    $(`div.cards-choice-${playerNum} > img`).addClass('rotate-center');
 				} else {
 					wins = wins2;
-					losses = losses1;
+                    losses = losses1;
+                    $(`div.cards-choice-${playerNum} > img`).addClass('rotate-center');
 				}
 				// Incremement win and loss
 				wins++;
@@ -306,16 +316,39 @@ $(document).ready(function(){
 					});
 					playersRef.child(otherPlayerNum).update({
 						'losses': losses
-					});
-				}, 500);
+                    });
+                    coin.play();
+                }, 500);
+                
+                // pointsRef.child(playerNum).update({
+                //     'wins': wins
+                // });
+                // pointsRef.child(otherPlayer).update({
+                //     'wins': wins
+                // });
 			}
             // Display results
 
 			window.setTimeout(function() {
 				// Reset turn to 1
 				turnRef.set(1);
-			}, 2000);
-		}
+            }, 2000);
+            
+            $(".title-animation").show();
+            $(".title").lettering();
+            $(".rst").lettering();
+            game.animate();
+            setTimeout(function(){
+                $(".title-animation").hide();
+            }, 2000);
+        },
+        animate: function() {
+            var title1 = new TimelineMax();
+            title1.to(".rst", 0, {visibility: 'hidden', opacity: 0})
+            title1.staggerFromTo(".title span", 0.5, 
+            {ease: Back.easeOut.config(1.7), opacity: 0, bottom: -80},
+            {ease: Back.easeOut.config(1.7), opacity: 1, bottom: 0}, 0.05);
+        }
     }
     
     // On page load Inizialize game
