@@ -19,10 +19,13 @@
     <link rel="stylesheet" type="text/css" media="screen" href="assets/css/main.css" />
     <link rel="stylesheet" type="text/css" media="screen" href="assets/css/scoreboard.css" />
     <link rel="stylesheet" type="text/css" media="screen" href="assets/css/textResult.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="assets/css/floating-chat.css"/>
+    <link rel="stylesheet" type="text/css" media="screen" href="assets/css/floating-instructions.css"/>
 </head>
 <body>
 
     <div class=".container-fluid">
+
         <div class="row row-centered">
             <div class="col-md-12 col-centered">
                 <div class="player1">
@@ -60,7 +63,7 @@
                     <div class="team gsw win">
                       <div class="rank">1</div>
                       <img class="logo" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/173024/jonathanlarradet_copy.png">
-                      <div id="usernameTable1" class="name">AND</div>
+                      <div id="usernameTable1" class="name">PY1</div>
                       <div class="score score1">0</div>
                       <div class="record record1">0</div>
                     </div>
@@ -68,7 +71,7 @@
                     <div class="team utc">
                       <div class="rank">2</div>
                       <img class="logo" src="assets/images/player_two.png">
-                      <div  id="usernameTable2" class="name">SUN</div>
+                      <div  id="usernameTable2" class="name">PY2</div>
                       <div class="score score2">0</div>
                       <div class="record record2">0</div>
                     </div>
@@ -76,6 +79,57 @@
             </div>
             <!-- end score board-->
             <div class="col-sm-4 cards cards-container-2"></div>
+        </div>
+
+        <div class="floating-chat">
+            <i class="fa fa-comments" aria-hidden="true"></i>
+            <div class="chat">
+                <div class="header">
+                    <span class="title">
+                        what's on your mind?
+                    </span>
+                    <button>
+                        <i class="fa fa-times" aria-hidden="true"></i>
+                    </button>
+                                    
+                </div>
+                <ul class="messages">
+                </ul>
+                <div class="footer">
+                    <div class="text-box" contenteditable="true" disabled="true"></div>
+                    <button id="sendMessage">send</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="floating-instructions">
+            <i class="fas fa-info-circle" aria-hidden="true"> How to play?</i>
+            <div class="instructions">
+                <div class="header-inst">
+                    <span class="title-inst">
+                        <h4>Instructions</h4>
+                    </span>
+                    <button class="close-instructions">
+                        <i class="fa fa-times" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div>
+                    <ul>
+                        <li>Insert your name and hit search!</li>
+                        <li>search will put you on the map so wait calmly until a new player joins the session</li>
+                        <li>Only 2 players can play at a time</li>
+                        <li>Once matched to a second player, the game begins</li>
+                        <li>select your choice from the list of options below (rock-paper-scissors)</li>
+                        <li>wait until other player makes a choice</li>
+                        <li>once the 2 players picked their options results will be display</li>
+                        <li>check the score board in the middle of the screen to see your wins/losses</li>
+
+                        <br />
+                        <h5>Chat</h5>
+                        <li>located on your right side you will find a message icon, click to start chatting with your opponent!</li>
+                    </ul> 
+                </div>
+            </div>
         </div>
     </div>
 

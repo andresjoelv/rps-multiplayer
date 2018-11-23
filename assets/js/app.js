@@ -19,6 +19,7 @@ $(document).ready(function(){
     var connections = database.ref("/connections");
     var playersRef = database.ref("/playersRef");
     var turnRef = database.ref("/turn");
+    var chatRef = database.ref("/chat");
     var pointsRef = database.ref("/scores");
 
     var player;
@@ -34,6 +35,7 @@ $(document).ready(function(){
 
     // Remove turn and chat when either player disconnects
     turnRef.onDisconnect().remove(); // this call is made everytime the user is online because it fires only once
+    chatRef.onDisconnect().remove();
     
     $(".title-animation").hide();
 
@@ -71,8 +73,11 @@ $(document).ready(function(){
             });
             // Remove player name from box on disconnect
 			playersRef.on('child_removed', function(childSnapshot) {
-				// Find player that was removed
-				//var key = childSnapshot.key();
+                // Find player that was removed
+                var key = childSnapshot.key;
+				// Show 'player has disconnected' on chat
+                chat.sendDisconnect(key);
+                
                 // bring back to station one
                 $(".form-control").empty();
                 $(".player-one").addClass("start-pulse");
@@ -81,6 +86,7 @@ $(document).ready(function(){
                 $(".player2").removeClass("animate-player-two");
                 $(".usernames").css("display", "none");
                 $(".search").show();
+                $(".floating-instructions").show();
                 var cards = $(".cards");
                 cards.empty();
 			});
@@ -93,6 +99,7 @@ $(document).ready(function(){
                     $(".player2").addClass("animate-player-two");
                     $(".usernames").css("display", "block");
                     $(".search").hide();
+                    $(".floating-instructions").hide();
                             
                     game.buildBoard();
                 }
@@ -250,7 +257,7 @@ $(document).ready(function(){
 			} else if (choice1 == 'rock') {
 				if (choice2 == 'paper') {
                     $(".item-winner").text(choice2);
-                    
+                    $(".item-message").text("SMASH!!");
                     $(".item-losser").text(choice1);
                     game.winner(2);
 				} else if (choice2 == 'scissors') {
@@ -350,8 +357,207 @@ $(document).ready(function(){
             {ease: Back.easeOut.config(1.7), opacity: 1, bottom: 0}, 0.05);
         }
     }
+
+    var chat = {
+        message: " ",
+        listeners: function(){
+            // Send button click
+            $('#sendMessage').on('click', chat.sendNewMessage);
+            // Show message when received
+			chatRef.on('child_added', function(childSnapshot) {
+				// Get name and message
+				var playerName = childSnapshot.val().name;
+				var message = childSnapshot.val().message;
+				// Show message
+				chat.showMessage(playerName, message);
+			});
+        },
+        // getMessage: function() {
+		// 	var input = $('#message-input');
+		// 	// Get message then clear it
+		// 	chat.message = input.val();
+		// 	input.val('');
+		// 	// Send data to database if player has name
+		// 	if (player !== undefined) {
+		// 		chat.sendMessage();
+		// 	}
+        // },
+        sendMessage: function() {
+			var obj = {};
+			obj['name'] = name[player];
+			obj['message'] = chat.message;
+			chatRef.push(obj);
+        },
+        sendDisconnect: function(key) {
+			var obj = {};
+			obj['name'] = name[key];
+			obj['message'] = ' has disconnected.';
+			chatRef.push(obj);
+        },
+        showMessage: function(playerName, message) {
+			// Auto scroll to bottom variables
+			//var messages = document.getElementById('messages');
+			//var isScrolledToBottom = messages.scrollHeight - messages.clientHeight <= messages.scrollTop + 1;
+            // Create p with display string
+            
+            var messagesContainer = $('.messages');
+
+			var $p = $('<p>');
+			if (message == ' has disconnected.' && player !== undefined) {
+                messagesContainer.append([
+                    '<div class="message-container">',
+                    '<img class="self-image" src="assets/images/error.png"/>',
+                    '<li class="self">',
+                    playerName,
+                    message,
+                    '</li>',
+                    '</div>'
+                ].join(''));
+			} else if (player !== undefined) {
+                if (name[1] == playerName){
+                    messagesContainer.append([
+                        '<div class="message-container">',
+                        '<img class="self-image" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/173024/jonathanlarradet_copy.png"/>',
+                        '<li class="self">',
+                        message,
+                        '</li>',
+                        '</div>'
+                    ].join(''));
+                }
+                else if(name[2] == playerName){
+                    messagesContainer.append([
+                        '<div class="message-container">',
+                        '<img class="self-image" src="assets/images/player_two.png"/>',
+                        '<li class="self">',
+                        message,
+                        '</li>',
+                        '</div>'
+                    ].join(''));
+                }
+                
+            }
+
+            // messagesContainer.finish().animate({
+            //     scrollTop: messagesContainer.prop("scrollHeight")
+            // }, 250);
+        },
+        sendNewMessage: function(){
+            var userInput = $('.text-box');
+            var newMessage = userInput.html().replace(/\<div\>|\<br.*?\>/ig, '\n').replace(/\<\/div\>/g, '').trim().replace(/\n/g, '<br>');
+
+            if (!newMessage) return;
+            chat.message = newMessage;
+        
+            // clean out old message
+            userInput.html('');
+            // focus on input
+            userInput.focus();
+            
+            if (player !== undefined) {
+            	chat.sendMessage();
+            }
+            else{
+                $('.messages').append([
+                    '<li class="self">',
+                    "Hi! You'll be able to chat as soon as you search for another oponent. Once a new player has joined your messages will be avilable to read in your opponents screen",
+                    '</li>'
+                ].join(''));
+            }
+        }
+    }
     
-    // On page load Inizialize game
-    game.listenToGame();
+// On page load Inizialize game
+game.listenToGame();
+// Start chat
+chat.listeners();
+
+var instructions = $('.floating-instructions');
+setTimeout(function() {
+    instructions.addClass('enter');
+}, 1000);
+
+instructions.click(openInstructions);
+
+$(".close-instructions").on("click", closeInstructions);
+
+function openInstructions() {
+    instructions.find('>i').hide();
+    instructions.addClass('expand');
+    instructions.find('.instructions').addClass('enter');
+    instructions.off('click', openInstructions);
+    instructions.find('header-inst button').click(closeInstructions);
+}
+
+function closeInstructions() {
+    instructions.find('.instructions').removeClass('enter').hide();
+    instructions.find('>i').show();
+    instructions.removeClass('expand');
+    instructions.find('header-inst button').off('click', closeInstructions);
+    setTimeout(function() {
+        instructions.find('.instructions').removeClass('enter').show()
+        instructions.click(openInstructions);
+    }, 500);
+}
+    
+var element = $('.floating-chat');
+var myStorage = localStorage;
+
+if (!myStorage.getItem('chatID')) {
+    myStorage.setItem('chatID', createUUID());
+}
+
+setTimeout(function() {
+    element.addClass('enter');
+}, 1000);
+
+element.click(openElement);
+
+function openElement() {
+    var messages = element.find('.messages');
+    var textInput = element.find('.text-box');
+    element.find('>i').hide();
+    element.addClass('expand');
+    element.find('.chat').addClass('enter');
+    element.off('click', openElement);
+    element.find('.header button').click(closeElement);
+    messages.scrollTop(messages.prop("scrollHeight"));
+}
+
+function closeElement() {
+    element.find('.chat').removeClass('enter').hide();
+    element.find('>i').show();
+    element.removeClass('expand');
+    element.find('.header button').off('click', closeElement);
+    element.find('.text-box').off('keydown', onMetaAndEnter).prop("disabled", true).blur();
+    setTimeout(function() {
+        element.find('.chat').removeClass('enter').show()
+        element.click(openElement);
+    }, 500);
+}
+
+function createUUID() {
+    // http://www.ietf.org/rfc/rfc4122.txt
+    var s = [];
+    var hexDigits = "0123456789abcdef";
+    for (var i = 0; i < 36; i++) {
+        s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+    }
+    s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
+    s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
+    s[8] = s[13] = s[18] = s[23] = "-";
+
+    var uuid = s.join("");
+    return uuid;
+}
+
+function onMetaAndEnter(event) {
+    if ((event.metaKey || event.ctrlKey) && event.keyCode == 13) {
+        sendNewMessage();
+    }
+}
+
+
+
+
 });
 
