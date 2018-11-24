@@ -374,7 +374,10 @@ $(document).ready(function(){
 				var playerName = childSnapshot.val().name;
 				var message = childSnapshot.val().message;
 				// Show message
-				chat.showMessage(playerName, message);
+                chat.showMessage(playerName, message);
+                // TO-DO
+                // add notification for new message
+                // $(".floating-chat").addClass("start-pulse");
 			});
         },
         // getMessage: function() {
@@ -424,6 +427,7 @@ $(document).ready(function(){
                         '<div class="message-container">',
                         '<img class="self-image" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/173024/jonathanlarradet_copy.png"/>',
                         '<li class="self">',
+                        playerName + ": ",
                         message,
                         '</li>',
                         '</div>'
@@ -434,6 +438,7 @@ $(document).ready(function(){
                         '<div class="message-container">',
                         '<img class="self-image" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/173024/jonathanlarradet_copy.png"/>',
                         '<li class="self">',
+                        playerName + ": ",
                         message,
                         '</li>',
                         '</div>'
