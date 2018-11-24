@@ -106,8 +106,8 @@ body {
   }
 
   .player-two {
-    background-color: green;
-    background-image: url(../images/player_two.png);
+    background-color: #e84c3d;
+    background-image: url(https://s3-us-west-2.amazonaws.com/s.cdpn.io/173024/jonathanlarradet_copy.png);
   }
   
   @-webkit-keyframes pulse {to {box-shadow: 0 0 0 45px rgba(232, 76, 61, 0);}}

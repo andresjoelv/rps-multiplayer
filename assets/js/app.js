@@ -93,8 +93,13 @@ $(document).ready(function(){
             turnRef.on("value", function(snapshot){
                 var turnNum = snapshot.val(); // 1 or 2
                 if(turnNum == 1) {
-                    $(".player-one").removeClass("start-pulse");
-                    $(".player-two").removeClass("start-pulse");
+                    if(player == 1){
+                        $(".player-two").removeClass("start-pulse");
+                    }
+                    else if(player == 2){
+                        $(".player-two").addClass("start-pulse");
+                        $(".player-one").removeClass("start-pulse");
+                    }
                     $(".player1").addClass("animate-player-one");
                     $(".player2").addClass("animate-player-two");
                     $(".usernames").css("display", "block");
@@ -427,7 +432,7 @@ $(document).ready(function(){
                 else if(name[2] == playerName){
                     messagesContainer.append([
                         '<div class="message-container">',
-                        '<img class="self-image" src="assets/images/player_two.png"/>',
+                        '<img class="self-image" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/173024/jonathanlarradet_copy.png"/>',
                         '<li class="self">',
                         message,
                         '</li>',
